@@ -1,0 +1,33 @@
+### Đăng ký một user MỚI
+POST http://localhost:8082/api/users/register
+Content-Type: application/json
+
+{
+  "email": "new.user@example.com",
+  "password": "password123",
+  "role": "CANDIDATE",
+  "firstName": "New",
+  "lastName": "User",
+  "phone": "0123456799"
+}
+
+### BƯỚC 1: Đăng nhập để lấy token
+# @name loginRequest
+POST http://localhost:8082/api/users/login
+Content-Type: application/json
+
+{
+  "email": "new.user@example.com",
+  "password": "password123"
+}
+
+
+### BƯỚC 2: Dùng token để truy cập API được bảo vệ
+@token = {{loginRequest.response.body.token}}
+
+GET http://localhost:8082/api/users/me
+Authorization: Bearer {{token}}
+
+### BƯỚC 3: TEST THỦ CÔNG VỚI TOKEN
+GET http://localhost:8082/api/users/me
+Authorization: Bearer 8F909D60D12D82BA0D9E7325E47321A3
