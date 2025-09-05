@@ -25,7 +25,6 @@ public class EmployerVerification {
     @Column(nullable = false)
     private VerificationStatus status = VerificationStatus.PENDING;
 
-    // Quan hệ với user (admin) đã xác thực
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "verified_by")
     private User verifiedBy;

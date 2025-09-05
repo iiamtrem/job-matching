@@ -3,13 +3,26 @@ package com.jobmatching.jobservice.model;
 import com.jobmatching.jobservice.model.enums.SkillLevel;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
 
 @Entity
 @Table(name = "job_skills")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "job")
+@EqualsAndHashCode(exclude = "job")
 public class JobSkill {
 
-    @EmbeddedId // Đánh dấu sử dụng một khóa chính được nhúng
+
+    @EmbeddedId
     private JobSkillId id;
 
     @ManyToOne(fetch = FetchType.LAZY)

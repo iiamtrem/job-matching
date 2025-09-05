@@ -18,13 +18,13 @@ public class UserJobPreferences {
     private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId // Đánh dấu rằng thuộc tính này dùng chung Primary Key với quan hệ
+    @MapsId
     @JoinColumn(name = "user_id")
     private User user;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "preferred_locations")
-    private String preferredLocations; // Map kiểu JSON sang String
+    private String preferredLocations;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "preferred_job_types")

@@ -1,33 +1,94 @@
-### Đăng ký một user MỚI
-POST http://localhost:8082/api/users/register
+
+@host = http://localhost:8080
+
+###
+### 1. Đăng ký một User mới (CANDIDATE)
+POST {{host}}/api/users/register
 Content-Type: application/json
 
 {
-  "email": "new.user@example.com",
+  "email": "candidate.test@example.com",
   "password": "password123",
   "role": "CANDIDATE",
-  "firstName": "New",
-  "lastName": "User",
-  "phone": "0123456799"
+  "firstName": "Van",
+  "lastName": "Nguyen",
+  "phone": "0912345678"
 }
 
-### BƯỚC 1: Đăng nhập để lấy token
-# @name loginRequest
-POST http://localhost:8082/api/users/login
+
+###
+### 2. Đăng ký một User khác (EMPLOYER)
+# Dùng để tạo một tài khoản nhà tuyển dụng mới.
+POST {{host}}/api/users/register
 Content-Type: application/json
 
 {
-  "email": "new.user@example.com",
+  "email": "employer.test@example.com",
+  "password": "password456",
+  "role": "EMPLOYER",
+  "firstName": "Anh",
+  "lastName": "Tran",
+  "phone": "0987654321"
+}
+
+
+###
+### 3. (THỬ LỖI) Đăng ký với email đã tồn tại
+# Request này phải trả về lỗi (ví dụ 500 Internal Server Error vì email là unique).
+POST {{host}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "candidate.test@example.com",
+  "password": "password123",
+  "role": "CANDIDATE",
+  "firstName": "Another",
+  "lastName": "Person",
+  "phone": "0999999999"
+}
+
+
+###
+### 4. Đăng nhập để lấy token
+# Dùng tài khoản CANDIDATE đã tạo ở bước 1 để đăng nhập.
+# @name loginRequest
+POST {{host}}/api/users/login
+Content-Type: application/json
+
+{
+  "email": "candidate.test@example.com",
   "password": "password123"
 }
 
 
-### BƯỚC 2: Dùng token để truy cập API được bảo vệ
+###
+### 5. (THÀNH CÔNG) Dùng token để lấy thông tin cá nhân ("GET ME")
+# Yêu cầu: Phải chạy request "4. Đăng nhập để lấy token" ngay trước đó.
+# Request này sẽ lấy thông tin của user đang đăng nhập.
 @token = {{loginRequest.response.body.token}}
 
-GET http://localhost:8082/api/users/me
+GET {{host}}/api/users/me
 Authorization: Bearer {{token}}
 
-### BƯỚC 3: TEST THỦ CÔNG VỚI TOKEN
-GET http://localhost:8082/api/users/me
-Authorization: Bearer 8F909D60D12D82BA0D9E7325E47321A3
+
+###
+### 6. (THÀNH CÔNG) Dùng token để lấy thông tin user theo ID
+# Yêu cầu: Phải chạy request "4. Đăng nhập để lấy token" trước.
+# Giả sử user đầu tiên có ID là 1.
+GET {{host}}/api/users/1
+Authorization: Bearer {{token}}
+
+
+###
+### 7. (THỬ LỖI) Đăng nhập với sai mật khẩu
+# Request này phải trả về lỗi 401 Unauthorized.
+POST {{host}}/api/users/login
+Content-Type: application/json
+
+{
+  "email": "candidate.test@example.com",
+  "password": "wrongpassword"
+}
+
+
+// eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJFTVBMT1lFUiJdLCJ1c2VySWQiOiI0Iiwic3ViIjoiZW1wbG95ZXIxQGNvbXBhbnkuY29tIiwiaWF0IjoxNzU1NTg5MDQ1LCJleHAiOjE3NTU2NzU0NDV9.sWwb5FrrPNIHY2zSDXCmA6yFu-Qnfx2seAIGtVc76ARLd1cJ-keqaSxSKfCaGamg

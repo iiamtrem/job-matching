@@ -29,6 +29,8 @@ public class UserProfile {
     private String phone;
 
     private String address;
+
+    @Column(columnDefinition = "TEXT")
     private String bio;
 
     @Column(name = "avatar_url")

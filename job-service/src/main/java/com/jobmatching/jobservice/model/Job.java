@@ -2,6 +2,13 @@ package com.jobmatching.jobservice.model; // Giả sử package là đây
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
 import org.hibernate.annotations.CreationTimestamp;
 import com.jobmatching.jobservice.model.enums.JobStatus;
 import com.jobmatching.jobservice.model.enums.JobType;
@@ -12,8 +19,15 @@ import java.util.Set;
 
 @Entity
 @Table(name = "jobs")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "jobSkills")
+@EqualsAndHashCode(exclude = "jobSkills")
 public class Job {
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
