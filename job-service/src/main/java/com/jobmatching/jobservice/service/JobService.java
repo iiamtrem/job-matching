@@ -40,10 +40,8 @@ public class JobService {
         job.setLocation(dto.getLocation());
         job.setJobType(dto.getJobType());
 
-        // Lưu lần 1 để có jobId cho composite key JobSkillId
         Job saved = jobRepository.save(job);
 
-        // Gắn skills nếu có
         if (dto.getSkills() != null && !dto.getSkills().isEmpty()) {
             Set<JobSkill> skills = mapSkillDtosToEntities(dto.getSkills(), saved);
             saved.setJobSkills(skills);
@@ -75,7 +73,6 @@ public class JobService {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Job not found: " + id));
 
-        // Chỉ chủ job mới được sửa
         if (!job.getEmployerId().equals(employerId)) {
             throw new IllegalStateException("You are not allowed to update this job");
         }
@@ -88,7 +85,6 @@ public class JobService {
         if (dto.getLocation() != null)     job.setLocation(dto.getLocation());
         if (dto.getJobType() != null)      job.setJobType(dto.getJobType());
 
-        // Nếu truyền skills -> replace toàn bộ (đơn giản cho Phase 1)
         if (dto.getSkills() != null) {
             if (job.getJobSkills() == null) {
                 job.setJobSkills(new HashSet<>());

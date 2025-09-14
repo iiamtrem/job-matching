@@ -1,5 +1,6 @@
 package com.jobmatching.userservice.controller;
 
+import com.jobmatching.userservice.dto.LoginRequest;
 import com.jobmatching.userservice.model.User;
 import com.jobmatching.userservice.repository.UserRepository;
 import com.jobmatching.userservice.service.JwtService;
@@ -19,10 +20,23 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        User user = userRepository.findByEmail(email).orElseThrow();
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        // Xác thực thông tin đăng nhập
+        authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        // Lấy user từ DB
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Tạo JWT
         String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(token);
+
+        // Trả response chứa token
+        return ResponseEntity.ok().body(token);
     }
 }

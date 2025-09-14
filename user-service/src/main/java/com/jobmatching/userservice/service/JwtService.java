@@ -19,7 +19,7 @@ import java.util.function.Function;
 public class JwtService {
 
     @Value("${application.security.jwt.secret-key}")
-    private String jwtSecretBase64; // SECRET phải là Base64 (>=32 bytes trước khi encode)
+    private String jwtSecretBase64;
 
     // ----- Public APIs -----
 
@@ -30,7 +30,7 @@ public class JwtService {
         claims.put("userId", user.getId());
 
         return Jwts.builder()
-                .setClaims(claims) // dùng set* để tương thích cả 0.11.x và 0.12.x
+                .setClaims(claims)
                 .setSubject(user.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10h
@@ -38,7 +38,6 @@ public class JwtService {
                 .compact();
     }
 
-    // Được JwtAuthenticationFilter gọi
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractEmail(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
@@ -65,7 +64,7 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()                 // yêu cầu jjwt-api/impl/jackson 0.11.x hoặc 0.12.x
+        return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)
@@ -77,7 +76,6 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // (Tuỳ chọn) Nếu nơi khác trong code đang gọi validateToken(token) thì giữ lại alias này
     public void validateToken(String token) {
         Jwts.parserBuilder().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
     }

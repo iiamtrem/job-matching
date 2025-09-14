@@ -14,5 +14,5 @@ public class JobUpdateDto {
     private BigDecimal salaryMax;
     private String location;
     private JobType jobType;
-    private Set<SkillDto> skills; // optional: nếu null thì giữ nguyên
+    private Set<SkillDto> skills;
 }

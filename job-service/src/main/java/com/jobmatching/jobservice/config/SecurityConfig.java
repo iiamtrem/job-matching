@@ -23,11 +23,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Chỉ EMPLOYER mới được tạo/sửa/xoá job
                         .requestMatchers(HttpMethod.POST,   "/api/jobs").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.PUT,    "/api/jobs/**").hasRole("EMPLOYER")
                         .requestMatchers(HttpMethod.DELETE, "/api/jobs/**").hasRole("EMPLOYER")
-                        // GET có thể cho phép anonymous hoặc yêu cầu đã qua gateway -> ở đây cho phép tất cả
                         .requestMatchers(HttpMethod.GET,    "/api/jobs/**").permitAll()
                         .anyRequest().authenticated()
                 )
