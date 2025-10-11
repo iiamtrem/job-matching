@@ -2,37 +2,28 @@ package com.jobmatching.jobservice.model;
 
 import com.jobmatching.jobservice.model.enums.SkillLevel;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "job_skills")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(exclude = "job")
-@EqualsAndHashCode(exclude = "job")
+@Getter @Setter
 public class JobSkill {
-
 
     @EmbeddedId
     private JobSkillId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @MapsId("jobId")
-    @JoinColumn(name = "job_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", nullable = false)
     private Job job;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "required_level")
-    private SkillLevel requiredLevel;
+    @Column(name = "required_level", length = 20)
+    private SkillLevel requiredLevel = SkillLevel.INTERMEDIATE;
 
-    private Float weight;
+    @Column(name = "weight")
+    private Float weight = 1.0f;
 }

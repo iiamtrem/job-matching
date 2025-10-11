@@ -15,15 +15,14 @@
     <groupId>com.jobmatching</groupId>
     <artifactId>job-matching-system</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <!-- BẮT BUỘC: Khai báo đây là project cha (parent) -->
     <packaging>pom</packaging>
 
-    <!-- BẮT BUỘC: Liệt kê tất cả các module con -->
     <modules>
         <module>discovery-server</module>
         <module>api-gateway</module>
         <module>user-service</module>
         <module>job-service</module>
+        <module>search-service</module>
     </modules>
 
     <properties>

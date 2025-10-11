@@ -1,6 +1,7 @@
 package com.jobmatching.userservice.controller;
 
 import com.jobmatching.userservice.dto.LoginRequest;
+import com.jobmatching.userservice.dto.JwtResponse;
 import com.jobmatching.userservice.model.User;
 import com.jobmatching.userservice.repository.UserRepository;
 import com.jobmatching.userservice.service.JwtService;
@@ -20,7 +21,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) {
         // Xác thực thông tin đăng nhập
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -37,6 +38,7 @@ public class AuthController {
         String token = jwtService.generateToken(user);
 
         // Trả response chứa token
-        return ResponseEntity.ok().body(token);
+        return ResponseEntity.ok(new JwtResponse(token, "Bearer"));
+
     }
 }

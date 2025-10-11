@@ -1,4 +1,3 @@
-// src/main/java/com/jobmatching/userservice/dto/LoginRequest.java
 package com.jobmatching.userservice.dto;
 
 import lombok.Data;

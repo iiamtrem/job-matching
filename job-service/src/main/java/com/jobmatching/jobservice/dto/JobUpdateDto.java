@@ -1,11 +1,13 @@
 package com.jobmatching.jobservice.dto;
 
 import com.jobmatching.jobservice.model.enums.JobType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
-@Data
+@Getter @Setter
 public class JobUpdateDto {
     private String title;
     private String description;

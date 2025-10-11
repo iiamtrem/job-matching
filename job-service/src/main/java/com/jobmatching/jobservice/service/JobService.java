@@ -1,126 +1,60 @@
 package com.jobmatching.jobservice.service;
 
-import com.jobmatching.jobservice.dto.JobCreationDto;
-import com.jobmatching.jobservice.dto.JobUpdateDto;
-import com.jobmatching.jobservice.dto.SkillDto;
 import com.jobmatching.jobservice.model.Job;
-import com.jobmatching.jobservice.model.JobSkill;
-import com.jobmatching.jobservice.model.JobSkillId;
-import com.jobmatching.jobservice.model.enums.SkillLevel;
 import com.jobmatching.jobservice.repository.JobRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.jobmatching.jobservice.search.JobPayload;
+import com.jobmatching.jobservice.search.SearchSyncClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class JobService {
 
-    private final JobRepository jobRepository;
+    private final JobRepository repo;
+    private final SearchSyncClient searchSync;
 
-    /* ===================== CREATE ===================== */
-
-    @Transactional
-    public Job createJob(JobCreationDto dto, Long employerId) {
-        // Tạo Job
-        Job job = new Job();
-        job.setEmployerId(employerId);
-        job.setTitle(dto.getTitle());
-        job.setDescription(dto.getDescription());
-        job.setRequirements(dto.getRequirements());
-        job.setSalaryMin(dto.getSalaryMin());
-        job.setSalaryMax(dto.getSalaryMax());
-        job.setLocation(dto.getLocation());
-        job.setJobType(dto.getJobType());
-
-        Job saved = jobRepository.save(job);
-
-        if (dto.getSkills() != null && !dto.getSkills().isEmpty()) {
-            Set<JobSkill> skills = mapSkillDtosToEntities(dto.getSkills(), saved);
-            saved.setJobSkills(skills);
-            saved = jobRepository.save(saved);
-        }
+    public Job createJob(Job req) {
+        Job saved = repo.save(req);
+        searchSync.upsert(toPayload(saved));
         return saved;
     }
 
-    /* ===================== READ ===================== */
+    public Job updateJob(Long id, Job req) {
+        Job j = repo.findById(id).orElseThrow();
+        // set lại các field bạn có trong entity:
+        j.setTitle(req.getTitle());
+        j.setDescription(req.getDescription());
+        j.setRequirements(req.getRequirements());
+        j.setSalaryMin(req.getSalaryMin());
+        j.setSalaryMax(req.getSalaryMax());
+        j.setLocation(req.getLocation());
+        j.setJobType(req.getJobType());   // nếu là enum
+        j.setStatus(req.getStatus());     // nếu có
+        j.setEmployerId(req.getEmployerId()); // nếu có chỉnh sửa
 
-    @Transactional(readOnly = true)
-    public Job getJob(Long id) {
-        return jobRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Job not found: " + id));
+        Job saved = repo.save(j);
+        searchSync.upsert(toPayload(saved));
+        return saved;
     }
 
-    @Transactional(readOnly = true)
-    public Page<Job> listJobs(Long employerId, Pageable pageable) {
-        if (employerId == null) {
-            return jobRepository.findAll(pageable);
-        }
-        return jobRepository.findAllByEmployerId(employerId, pageable);
+    public void deleteJob(Long id) {
+        repo.deleteById(id);
+        searchSync.delete(String.valueOf(id));
     }
 
-    /* ===================== UPDATE ===================== */
-
-    @Transactional
-    public Job updateJob(Long id, JobUpdateDto dto, Long employerId) {
-        Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Job not found: " + id));
-
-        if (!job.getEmployerId().equals(employerId)) {
-            throw new IllegalStateException("You are not allowed to update this job");
-        }
-
-        if (dto.getTitle() != null)        job.setTitle(dto.getTitle());
-        if (dto.getDescription() != null)  job.setDescription(dto.getDescription());
-        if (dto.getRequirements() != null) job.setRequirements(dto.getRequirements());
-        if (dto.getSalaryMin() != null)    job.setSalaryMin(dto.getSalaryMin());
-        if (dto.getSalaryMax() != null)    job.setSalaryMax(dto.getSalaryMax());
-        if (dto.getLocation() != null)     job.setLocation(dto.getLocation());
-        if (dto.getJobType() != null)      job.setJobType(dto.getJobType());
-
-        if (dto.getSkills() != null) {
-            if (job.getJobSkills() == null) {
-                job.setJobSkills(new HashSet<>());
-            } else {
-                job.getJobSkills().clear();
-            }
-            Set<JobSkill> skills = mapSkillDtosToEntities(dto.getSkills(), job);
-            job.getJobSkills().addAll(skills);
-        }
-
-        return jobRepository.save(job);
-    }
-
-    /* ===================== DELETE ===================== */
-
-    @Transactional
-    public void deleteJob(Long id, Long employerId) {
-        Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Job not found: " + id));
-
-        if (!job.getEmployerId().equals(employerId)) {
-            throw new IllegalStateException("You are not allowed to delete this job");
-        }
-        jobRepository.delete(job);
-    }
-
-    /* ===================== Helper ===================== */
-
-    private Set<JobSkill> mapSkillDtosToEntities(Set<SkillDto> dtos, Job job) {
-        if (dtos == null || dtos.isEmpty()) return new HashSet<>();
-        return dtos.stream().map(s -> {
-            JobSkill js = new JobSkill();
-            js.setId(new JobSkillId(job.getId(), s.getSkillName()));
-            js.setRequiredLevel(s.getRequiredLevel() == null ? SkillLevel.INTERMEDIATE : s.getRequiredLevel());
-            js.setJob(job);
-            return js;
-        }).collect(Collectors.toSet());
+    private JobPayload toPayload(Job j) {
+        return JobPayload.builder()
+                .id(String.valueOf(j.getId()))
+                .employerId(j.getEmployerId() == null ? null : String.valueOf(j.getEmployerId()))
+                .title(j.getTitle())
+                .description(j.getDescription())
+                .requirements(j.getRequirements())
+                .salaryMin(j.getSalaryMin())
+                .salaryMax(j.getSalaryMax())
+                .location(j.getLocation())
+                .jobType(j.getJobType() == null ? null : j.getJobType().toString()) // enum -> String
+                .status(j.getStatus() == null ? null : j.getStatus().toString())    // nếu enum
+                .build();
     }
 }

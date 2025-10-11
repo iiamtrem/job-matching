@@ -27,6 +27,7 @@ public class AdminUserController {
         return ResponseEntity.ok(userRepository.findAllByRole(role, pageable));
     }
 
+
     @PutMapping("/users/{id}/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivate(@PathVariable Long id) {

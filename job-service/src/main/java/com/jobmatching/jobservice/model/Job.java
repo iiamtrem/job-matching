@@ -1,33 +1,21 @@
-package com.jobmatching.jobservice.model; // Giả sử package là đây
+package com.jobmatching.jobservice.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
-
-import org.hibernate.annotations.CreationTimestamp;
 import com.jobmatching.jobservice.model.enums.JobStatus;
 import com.jobmatching.jobservice.model.enums.JobType;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "jobs")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString(exclude = "jobSkills")
-@EqualsAndHashCode(exclude = "jobSkills")
+@Getter @Setter
 public class Job {
-
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +24,7 @@ public class Job {
     @Column(name = "employer_id", nullable = false)
     private Long employerId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -45,28 +33,27 @@ public class Job {
     @Column(columnDefinition = "TEXT")
     private String requirements;
 
-    @Column(name = "salary_min")
+    @Column(name = "salary_min", precision = 12, scale = 2)
     private BigDecimal salaryMin;
 
-    @Column(name = "salary_max")
+    @Column(name = "salary_max", precision = 12, scale = 2)
     private BigDecimal salaryMax;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "job_type", nullable = false)
+    @Column(name = "job_type", nullable = false, length = 20)
     private JobType jobType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false, length = 20)
     private JobStatus status = JobStatus.DRAFT;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
-    // Quan hệ với JobSkills
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<JobSkill> jobSkills;
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<JobSkill> jobSkills = new HashSet<>();
 }
